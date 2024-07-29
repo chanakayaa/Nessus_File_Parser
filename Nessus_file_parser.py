@@ -2,12 +2,11 @@ import os
 import xml.etree.ElementTree as ET
 from collections import defaultdict
 
-
-# Scars On The Back Are A Swordsman's Shame 
-
-
 def parse_nessus_file(file_path):
     vulnerabilities = []
+
+
+    ## SCARS ON THE BACK ARE SWORDSMEN SHAME 
 
     try:
         tree = ET.parse(file_path)
@@ -247,8 +246,8 @@ def generate_detailed_findings(vulnerabilities, output_file_path):
         html_content += f"""
         <div>
             <p><span class="bold">Observation {index}:</span></p>
-            <p><span class="bold">i. Affected Asset i.e. IP/URL/Application etc.:</span> {vuln['IP(Port)']}</p>
-            <p><span class="bold">ii. Observation / Vulnerability Title:</span> {vuln['Vulnerability Name']}</p>
+            <p><span class="bold">i. Observation / Vulnerability Title:</span> {vuln['Vulnerability Name']}</p>
+            <p><span class="bold">ii. Affected Asset i.e. IP/URL/Application etc.:</span> {vuln['IP(Port)']}</p>
             <p><span class="bold">iii. Detailed Observation:</span> {vuln['Description']}</p>
             <p><span class="bold">iv. CVE/CWE ID:</span> {vuln['CVE/CWE IDs']}</p>
             <p><span class="bold">v. Severity:</span> {vuln['Severity']}</p>
@@ -286,7 +285,7 @@ def generate_detailed_findings(vulnerabilities, output_file_path):
 if __name__ == "__main__":
     print("\n********************************************")
     print("*                                          *")
-    print("*        NESSUS FILE PARSER                *")
+    print("*   --   NESSUS FILE PARSER --             *")
     print("*                                          *")
     print("********************************************\n")
 
@@ -320,7 +319,6 @@ if __name__ == "__main__":
 
                         # FUTURE PIRATE KING " MONKEY D. LUFFY " 
 
-#-----------------------------------------------------------------------------------------------------------------------------------------
-
+ #-----------------------------------
 
 # CREATED BY :: PUSHKAR SINGH
