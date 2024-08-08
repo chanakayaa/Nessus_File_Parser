@@ -305,7 +305,7 @@ def generate_detailed_findings(vulnerabilities, output_file_path):
 if __name__ == "__main__":
     print("\n********************************************")
     print("*                                          *")
-    print("*       AKS IT NESSUS  PARSER              *")
+    print("*       One Peice NESSUS  PARSER           *")
     print("*                                          *")
     print("********************************************\n")
 
