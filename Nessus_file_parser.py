@@ -5,9 +5,6 @@ from collections import defaultdict
 def parse_nessus_file(file_path):
     vulnerabilities = []
 
-
-    ## SCARS ON THE BACK ARE SWORDSMEN SHAME 
-
     try:
         tree = ET.parse(file_path)
         root = tree.getroot()
@@ -36,7 +33,12 @@ def parse_nessus_file(file_path):
                 combined_ids = cve_ids + cwe_ids if cve_ids or cwe_ids else ["N/A"]
 
                 solution = item.find(".//solution").text.strip() if item.find(".//solution") is not None else "N/A"
-                reference = item.find(".//see_also").text.strip() if item.find(".//see_also") is not None else "N/A"
+
+                # Collect references and format them
+                reference_elements = item.findall(".//see_also")
+                references = [ref.text.strip() for ref in reference_elements] if reference_elements else []
+                reference = ", ".join(references) if references else "N/A"
+
                 description = item.find(".//description").text.strip() if item.find(".//description") is not None else "N/A"
                 port = item.get('port', '0')
 
@@ -116,7 +118,7 @@ def merge_vulnerabilities(vulnerabilities):
             "CVE/CWE IDs": ', '.join(merged_data["CVE/CWE IDs"]) if merged_data["CVE/CWE IDs"] else "N/A",
             "Severity": merged_data["Severity"],
             "Recommendation": merged_data["Recommendation"],
-            "Reference": merged_data["Reference"],
+            "Reference": ', '.join(merged_data["Reference"].split(', ')) if merged_data["Reference"] else "N/A",
             "Description": merged_data["Description"]
         })
 
@@ -200,13 +202,13 @@ def generate_html_report(vulnerabilities, output_file_path):
         # Build HTML row with bold and centered severity and bold vulnerability name
         html_content += f"""
             <tr>
-                <td class="center">{i}</td>
+                <td class="bold">{i}</td>
                 <td class="center">{vuln['IP(Port)']}</td>
                 <td><span class="bold">{vuln['Vulnerability Name']}</span></td>
                 <td class="center">{vuln['CVE/CWE IDs']}</td>
                 <td class="center"><span class="{severity_class}">{vuln['Severity']}</span></td>
                 <td>{vuln['Recommendation']}</td>
-                <td>{vuln['Reference']}</td>
+                <td>{', '.join(vuln['Reference'].split())}</td>
                 <td class="center">New</td>
             </tr>
         """
@@ -219,6 +221,7 @@ def generate_html_report(vulnerabilities, output_file_path):
 
     with open(output_file_path, 'w') as file:
         file.write(html_content)
+
 
 def generate_detailed_findings(vulnerabilities, output_file_path):
     html_content = """
@@ -237,35 +240,51 @@ def generate_detailed_findings(vulnerabilities, output_file_path):
             .separator {
                 padding: 10px 0;
             }
+            .indented {
+                margin-left: 20px; /* Indent by 20px */
+                display: block; /* Ensures that the indentation applies */
+            }
         </style>
     </head>
     <body>
     """
 
     for index, vuln in enumerate(vulnerabilities, start=1):
+        # Combine the references with a comma and space
+        references = ', '.join(vuln['Reference'].split())
+
         html_content += f"""
         <div>
             <p><span class="bold">Observation {index}:</span></p>
-            <p><span class="bold">i. Observation / Vulnerability Title:</span> {vuln['Vulnerability Name']}</p>
-            <p><span class="bold">ii. Affected Asset i.e. IP/URL/Application etc.:</span> {vuln['IP(Port)']}</p>
-            <p><span class="bold">iii. Detailed Observation:</span> {vuln['Description']}</p>
-            <p><span class="bold">iv. CVE/CWE ID:</span> {vuln['CVE/CWE IDs']}</p>
-            <p><span class="bold">v. Severity:</span> {vuln['Severity']}</p>
-            <p><span class="bold">vi. Recommendation:</span> {vuln['Recommendation']}</p>
-            <p><span class="bold">vii. Reference:</span> {vuln['Reference']}</p>
-        """
+            
+            <p><span class="bold">i. Observation / Vulnerability Title:</span><br>
+            <span class="indented">{vuln['Vulnerability Name']}</span></p>
 
-        if 'New or Repeat observation' in vuln:
-            html_content += f"""
-            <p><span class="bold">viii. New or Repeat observation:</span> {vuln['New or Repeat observation']}</p>
-            """
-        else:
-            html_content += f"""
-            <p><span class="bold">viii. New or Repeat observation:</span> New</p>
-            """
+            <p><span class="bold">ii. Affected Asset i.e. IP/URL/Application etc.:</span><br>
+            <span class="indented">{vuln['IP(Port)']}</span></p>
 
-        html_content += f"""
-            <p><span class="bold">ix. Proof of Concept:</span> Step I: Go the URL: [Screenshot]</p>
+            <p><span class="bold">iii. Detailed Observation:</span><br>
+            <span class="indented">{vuln['Description']}</span></p>
+
+            <p><span class="indented"><em>Note:</em> This plugin requires ICMP traffic to be unblocked between the scanner and the host.</span></p>
+
+            <p><span class="bold">iv. CVE/CWE ID:</span><br>
+            <span class="indented">{vuln['CVE/CWE IDs']}</span></p>
+
+            <p><span class="bold">v. Severity:</span><br>
+            <span class="indented">{vuln['Severity']}</span></p>
+
+            <p><span class="bold">vi. Recommendation:</span><br>
+            <span class="indented">{vuln['Recommendation']}</span></p>
+
+            <p><span class="bold">vii. Reference:</span><br>
+            <span class="indented">{references}</span></p>
+
+            <p><span class="bold">viii. New or Repeat observation:</span><br>
+            <span class="indented">New</span></p>
+
+            <p><span class="bold">ix. Proof of Concept:</span><br>
+            <span class="indented">Step I: Go to the URL: [Screenshot]</span></p>
         </div>
         """
 
@@ -282,10 +301,11 @@ def generate_detailed_findings(vulnerabilities, output_file_path):
     with open(output_file_path, 'w') as file:
         file.write(html_content)
 
+
 if __name__ == "__main__":
     print("\n********************************************")
     print("*                                          *")
-    print("*   --   NESSUS FILE PARSER --             *")
+    print("*       AKS IT NESSUS  PARSER              *")
     print("*                                          *")
     print("********************************************\n")
 
